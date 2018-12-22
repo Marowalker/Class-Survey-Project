@@ -1,6 +1,8 @@
 const knex = require('knex')(require('../db/dbconfig')) 
 const user= require('./user')
 const code=require('../utilities/code')
+const validate=require('../utilities/validate')
+const {standard}=require('../utilities/validate')
 
 const getProfile= async (id)=> {
   try {
@@ -36,8 +38,8 @@ const getResultById= async (id,course_id)=> {
 
 const getAllAccounts =async ()=> {
   try { 
-    listStudents = await knex.select('users.id','users.username','students.fullname','students.vnuemail','students.classname').from('users').rightJoin('students','users.id','students.id')
-    listLecturers = await knex.select('users.id','users.username','lecturers.fullname','lecturers.vnuemail').from('users').rightJoin('lecturers','users.id','lecturers.id')
+    listStudents = await knex.select('users.id','users.role','users.username','students.fullname','students.vnuemail','students.classname').from('users').rightJoin('students','users.id','students.id')
+    listLecturers = await knex.select('users.id','users.role','users.username','lecturers.fullname','lecturers.vnuemail').from('users').rightJoin('lecturers','users.id','lecturers.id')
     const result=listLecturers.concat(listStudents)
     if (result.length == 0) throw new Error("not found or not have account")
     return result
@@ -62,23 +64,38 @@ const deleteAllAccount= async ()=> {
 
 const createListAccounts=async(listAccounts,role)=>{
   try { 
-    usernameUP = listAccounts.map(function (obj) {return obj.username})
-    if( usernameUP.some(r=> r== null) ) throw new Error ("have some invalid username or xlsx is imformal")
+    usernameDB = await knex('users').select('username').map(function (obj) {return obj.username}) 
+    listAccounts.some(obj=>{
+      if(!validate.isUsername(obj.username))
+        throw new Error ("have some invalid username or xlsx is imformal")
+      else{
+        obj.username=standard(obj.username)
+        if(usernameDB.indexOf(obj.username) >= 0) throw new Error ("have some existed username") 
+      }
 
-    usernameDB = await knex('users').select('username').map(function (obj) {return obj.username})  
-    if( usernameUP.some(r=> usernameDB.indexOf(r) >= 0) ) throw new Error ("have some exited username")  
+      if(!validate.isPassword(obj.password))
+        throw new Error ("have some invalid password or xlsx is imformal")
+      else
+        obj.password=code.encrypt(""+obj.password)
 
-    passwordUP = listAccounts.map(function (obj) {return obj.password})
-    if( passwordUP.some(r=> r== null) ) throw new Error ("have some invalid password or xlsx is imformal")
+      if(!validate.isFullname(obj.fullname))
+        throw new Error ("have some invalid fullname or xlsx is imformal") 
+      else
+        obj.fullname=standard(obj.fullname)
 
-    fullnameUP = listAccounts.map(function (obj) {return obj.fullname})
-    if( fullnameUP.some(r=> r== null) ) throw new Error ("have some invalid fullname or xlsx is imformal") 
+      if(!validate.isVnuEmail(obj.vnuemail))
+        throw new Error ("have some invalid vnuemail or xlsx is imformal") 
+      else
+        obj.vnuemail=standard(obj.vnuemail)
 
-    vnuemailUP = listAccounts.map(function (obj) {return obj.vnuemail})
-    if( vnuemailUP.some(r=> r== null) ) throw new Error ("have some invalid vnuemail or xlsx is imformal")  
+      if(role==3 ){
+        if(!validate.isClassname(obj.classname))
+          throw new Error ("have some invalid classname or xlsx is imformal") 
+        else
+          obj.classname=standard(obj.classname)
+      }      
 
-    classnameUP = listAccounts.map(function (obj) {return obj.classname})
-    if( role==3 && classnameUP.some(r=> r== null) ) throw new Error ("have some invalid classname or xlsx is imformal")   
+    })  
 
     var maxIndex= await knex('users').max('id')
     userIndex=maxIndex[0]["max(`id`)"]
@@ -89,7 +106,7 @@ const createListAccounts=async(listAccounts,role)=>{
       return {
         id:userIndex,
         username: obj.username,
-        password: code.encrypt(""+obj.password),
+        password: obj.password,
         role:role
       }
     })
@@ -148,15 +165,134 @@ const deleteAccount= async (id)=> {
   }
 }
 
-// const createAccount= async ()=> {
-//   try { 
-//     const result = await knex('coursesoflecturers').select('course_id','id','fullname','subject')
-//     if (result.length == 0) throw new Error("not found or not have course")
-//     return result
-//   } catch (err) {
-//     throw err
-//   }
-// }
+const createAccount= async (account)=> {
+  try { 
+    if (account.role!=2 && account.role!=3) throw new Error("Account role is invalid")
+
+    usernameDB = await knex('users').select('username').map(function (obj) {return obj.username}) 
+    if(!validate.isUsername(account.username))
+      throw new Error ("invalid username ")
+    else{
+      account.username=standard(account.username)
+      if(usernameDB.indexOf(account.username) >= 0) throw new Error ("existed username") 
+    }
+
+    if(!validate.isPassword(account.password))
+      throw new Error ("invalid password ")
+    else
+      account.password=code.encrypt(""+account.password)
+
+    if(!validate.isFullname(account.fullname))
+      throw new Error ("invalid fullname ") 
+    else
+      account.fullname=standard(account.fullname)
+
+    if(!validate.isVnuEmail(account.vnuemail))
+      throw new Error ("invalid vnuemail ") 
+    else
+      account.vnuemail=standard(account.vnuemail)
+
+    if(account.role==3 ){
+      if(!validate.isClassname(account.classname))
+        throw new Error ("invalid classname ") 
+      else
+        account.classname=standard(account.classname)
+    } 
+
+    var maxIndex= await knex('users').max('id')
+    id=maxIndex[0]["max(`id`)"]+1  
+    await knex('users').insert({id:id,role:account.role,username:account.username,password:account.password})
+    if (account.role==2)
+      await knex('lecturers').insert({id:id,fullname:account.fullname,vnuemail:account.vnuemail})
+    else
+      await knex('students').insert({id:id,fullname:account.fullname,vnuemail:account.vnuemail,classname:account.classname})
+    return "OK"
+  } catch (err) {
+    throw err
+  }
+}
+
+const deleteCourse= async (course_id)=> {
+  try { 
+    const result = await knex('courses').select().where({course_id:course_id})
+    if (result.length == 0) throw new Error("not found course")      
+    await knex('reportofstudent').where({course_id:course_id}).del()
+    await knex('lecturersofcourse').where({course_id:course_id}).del()
+    await knex('studentsofcourse').where({course_id:course_id}).del()
+    await knex('courses').where({course_id:course_id}).del()
+    return "OK"
+  } catch (err) {
+    throw err
+  }
+}
+
+const deleteAllCourses= async ()=> {
+  try { 
+    await knex('reportofstudent').del()
+    await knex('lecturersofcourse').del()
+    await knex('studentsofcourse').del()
+    await knex('courses').del()
+    return "OK"
+  } catch (err) {
+    throw err
+  }
+}
+
+const createCourse= async (listAccounts,data)=> {
+  try { 
+
+    var result = await knex('courses').select().where({course_id:data.course_id})
+    if (result.length != 0) throw new Error("new course_id existed")  
+
+    result = await knex('lecturers').select().where({id:data.lecturer_id})
+    if (result.length == 0) throw new Error("lecturer_id didn't exist") 
+
+    result =await knex('users').select('id','username')
+    if (result.length == 0) throw new Error("not found list account") 
+    idByUsername = result.reduce(function(map, obj) {
+      map[obj.username] = obj.id
+      return map
+      }, {}
+    )  
+
+    listAccounts.some(obj=>{
+      if(!validate.isUsername(obj.username))
+        throw new Error ("have some invalid username or xlsx is imformal")
+      else{
+        if(idByUsername[standard(obj.username)]==null) throw new Error ("student username didn't exist") 
+        obj.id= idByUsername[standard(obj.username)]
+      }
+    })
+    
+    listStudents =listAccounts.map(function (obj) {
+      return {
+        id:obj.id,
+        course_id:data.course_id
+      }
+    })
+     
+    await knex('courses').insert({
+      course_id: standard(data.course_id),
+      subject:standard(data.subject),
+      year:standard(data.year),
+      semester:standard(data.semester),
+      time:standard(data.year),
+      place:standard(data.place),
+      credit:standard(data.credit),
+    })
+
+    await knex('lecturersofcourse').insert({
+      course_id: standard(data.course_id),
+      id: standard(data.lecturer_id),
+    }) 
+
+    await knex('studentsofcourse').insert(listStudents)
+    return "OK"
+  }catch (err) {
+    throw err
+  }
+}
+
 
 module.exports = {
   getProfile,
@@ -166,5 +302,8 @@ module.exports = {
   deleteAllAccount,
   createListAccounts,
   deleteAccount,
-  // createAccount,
+  createAccount,
+  createCourse,
+  deleteCourse,
+  deleteAllCourses
 }

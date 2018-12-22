@@ -7,8 +7,9 @@ module.exports = {
     // database: "class_survey"
   	host: "127.0.0.1",
   	user: "root",
-  	password: "Pokemon4ever",
+  	password: "12345678",
   	database: "class_survey"
   },
-  useNullAsDefault: true
+  useNullAsDefault: true,
+  acquireConnectionTimeout: 10000
 }
