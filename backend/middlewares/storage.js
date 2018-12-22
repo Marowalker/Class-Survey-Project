@@ -6,7 +6,7 @@ const XLSX = require('xlsx')
 const upAvatar = async  (req,res,next)=> {
   try{         
     const id=req.sender.id
-    if (id==null) throw new Error("id err")
+    if (id==null) throw new Error("id error")
     var form =  new formidable.IncomingForm()
     form.uploadDir = "./public/resource/avatar/"
     form.parse(req,function (err, fields, file) {
