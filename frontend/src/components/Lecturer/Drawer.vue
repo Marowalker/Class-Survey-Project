@@ -12,7 +12,7 @@
       <v-layout tag="v-list" column fill-height>
         <v-list-tile avatar>
           <v-list-tile-avatar color="white">
-            <v-img  :src="avatar" contain/>
+            <v-img :src="avatar" />
           </v-list-tile-avatar>
           <v-list-tile-content>
             <v-list-tile-title>{{ fullname }}</v-list-tile-title>
@@ -38,13 +38,6 @@
           </v-list-tile-action>
           <v-list-tile-title>Logout</v-list-tile-title>
         </v-list-tile>
-        <v-spacer></v-spacer>
-        <v-list-tile id="logo">
-          <v-layout row fill-height justify-start align-center>
-              <img height="46" src="@/assets/logoUET.png">
-              <v-toolbar-title>UET CLASS SURVEY</v-toolbar-title>
-          </v-layout>
-        </v-list-tile>
       </v-layout>
     </v-img>
   </v-navigation-drawer>
@@ -56,32 +49,14 @@ import { mapMutations, mapState } from 'vuex'
 export default {
   data () {
     return {
-      links:
-      [
-        {
-          to: '/lecturer/dashboard',
-          icon: 'dashboard',
-          text: 'Dashboard'
-        },
-        {
-          to: '/lecturer/profile',
-          icon: 'person',
-          text: 'User Profile'
-        },
-        {
-          to: '/login',
-          icon: 'exit_to_app',
-          text: 'Logout'
-        }
-      ]
+      role: localStorage.getItem('roleStatus')
     }
   },
   computed: {
     ...mapState({
       // arrow functions can make the code very succinct!
       fullname: state => state.user.fullname,
-      avatar: state => state.avatar,
-      role: state => state.role
+      avatar: state => state.avatar
     }),
     ...mapState('app', ['image', 'color']),
     drawer: {

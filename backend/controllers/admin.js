@@ -11,7 +11,7 @@ const getResultById =async (req,res) =>{
     const {id,course_id}=req.body
     let result 
     if (role==1)  result=await admin.getResultById(id,course_id)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -23,7 +23,7 @@ const getAllAccounts =async (req,res) =>{
     const {role}=req.sender
     let result 
     if (role==1)result= await admin.getAllAccounts()
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -36,7 +36,22 @@ const deleteAccount =async (req,res) =>{
     id=req.body.id
     let result 
     if (role==1)result= await admin.deleteAccount(id)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
+    res.send(result)
+  }catch(error){
+    res.status(400).send({message: error.message})
+  }
+}
+
+const deleteSomeAccounts =async (req,res) =>{
+  try{
+    const {role}=req.sender
+    list_id=req.body.list_id
+    let result 
+    if (role==1)
+      for(var i=0;i<list_id.length;i++)
+        result= await admin.deleteAccount(list_id[i])
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -48,7 +63,7 @@ const deleteAllAccounts =async (req,res) =>{
     const {role}=req.sender
     let result 
     if (role==1)result= await admin.deleteAllAccount()
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -62,7 +77,7 @@ const createListAccounts =async (req,res) =>{
     if (accountsRole !=2 && accountsRole !=3) throw new Error("Accounts role is invalid")
     let result 
     if (role==1) result= await admin.createListAccounts(req.listAccounts,accountsRole)
-    else throw new Error("this role isn't allowed access")  
+    else throw new Error("This role wasn't allowed access")  
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -82,7 +97,7 @@ const createAccount =async (req,res) =>{
     }
     let result 
     if (role==1) result= await admin.createAccount(account)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -94,7 +109,7 @@ const deleteForm =async (req,res) =>{
     const {role}=req.sender
     let result 
     if (role==1)result= await form.deleteForm()
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -107,7 +122,7 @@ const createForm=async (req,res) =>{
     data=req.body.data
     let result 
     if (role==1)result= await form.createForm(data)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -119,7 +134,7 @@ const checkUpdateForm=async (req,res) =>{
     const {role}=req.sender
     let result 
     if (role==1)result= await form.checkUpdateForm()
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -132,7 +147,7 @@ const updateAccountPassword=async (req,res) =>{
     const {id,password}=req.body
     let result 
     if (role==1)result= await user.updatePassword(id,password)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -150,8 +165,8 @@ const updateAccountInfo=async(req,res)=>{
       classname:req.body.classname
     }
     let result 
-    if (role==1)  result = await user.updateInfo(req.body.id,account)
-    else throw new Error("this role isn't allowed access")
+    if (role==1)  result = await admin.updateInfo(req.body.id,account)
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -164,7 +179,22 @@ const deleteCourse =async (req,res) =>{
     const course_id=req.body.course_id
     let result 
     if (role==1)result= await admin.deleteCourse(course_id)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
+    res.send(result)
+  }catch(error){
+    res.status(400).send({message: error.message})
+  }
+}
+
+const deleteSomeCourses =async (req,res) =>{
+  try{
+    const {role}=req.sender
+    const list_course_id=req.body.list_course_id
+    let result 
+    if (role==1)
+      for (var i=0;i<list_course_id.length;i++)
+        result= await admin.deleteCourse(list_course_id[i])
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -176,7 +206,7 @@ const deleteAllCourses =async (req,res) =>{
     const {role}=req.sender
     let result 
     if (role==1)result= await admin.deleteAllCourses()
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -190,7 +220,46 @@ const createCourse =async (req,res) =>{
     const data=req.data
     let result 
     if (role==1)result= await admin.createCourse(listAccounts,data)
-    else throw new Error("this role isn't allowed access")
+    else throw new Error("This role wasn't allowed access")
+    res.send(result)
+  }catch(error){
+    res.status(400).send({message: error.message})
+  }
+}
+
+const createCriteria =async (req,res) =>{
+  try{
+    const {role}=req.sender
+    const {criteria}=req.body
+    let result 
+    if (role==1)result= await form.createCriteria(criteria)
+    else throw new Error("This role wasn't allowed access")
+    res.send(result)
+  }catch(error){
+    res.status(400).send({message: error.message})
+  }
+}
+
+const editCriteria =async (req,res) =>{
+  try{
+    const {role}=req.sender
+    const {id,criteria}=req.body
+    let result 
+    if (role==1)result= await form.editCriteria(id,criteria)
+    else throw new Error("This role wasn't allowed access")
+    res.send(result)
+  }catch(error){
+    res.status(400).send({message: error.message})
+  }
+}
+
+const deleteCriteria=async (req,res) =>{
+  try{
+    const {role}=req.sender
+    const {id}=req.body
+    let result 
+    if (role==1)result= await form.deleteCriteria(id)
+    else throw new Error("This role wasn't allowed access")
     res.send(result)
   }catch(error){
     res.status(400).send({message: error.message})
@@ -212,4 +281,9 @@ module.exports = {
   createCourse,
   deleteCourse,
   deleteAllCourses,
+  editCriteria,
+  createCriteria,
+  deleteCriteria ,
+  deleteSomeCourses,
+  deleteSomeAccounts,
 }

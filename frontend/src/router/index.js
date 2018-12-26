@@ -8,6 +8,10 @@ import StudentCourseOverview from '@/components/Student/CourseOverview'
 import LecturerCourseOverview from '@/components/Lecturer/CourseOverview'
 import StudentProfile from '@/components/Student/UserProfile.vue'
 import LecturerProfile from '@/components/Lecturer/UserProfile.vue'
+import Admin from '@/components/Admin/Admin.vue'
+import ManageAccounts from '@/components/Admin/Accounts/ManageAccounts'
+import ManageSurveys from '@/components/Admin/Surveys/ManageSurveys'
+import ManageForm from '@/components/Admin/Form/ManageForm'
 
 Vue.use(Router)
 
@@ -92,12 +96,65 @@ let router = new Router({
         },
         {
           path: 'profile',
-          name: 'User Profilex',
+          name: 'User Profile',
           component: LecturerProfile,
           meta: { requiresAuth: true },
           beforeEnter (to, from, next) {
             let role = localStorage.getItem('roleStatus')
             if (role === 'Lecturer') {
+              next()
+            } else {
+              next('/')
+            }
+          }
+        }
+      ]
+    },
+    {
+      path: '/admin',
+      component: Admin,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '/',
+          redirect: 'accounts'
+        },
+        {
+          path: 'accounts',
+          name: 'Manage Account',
+          component: ManageAccounts,
+          meta: { requiresAuth: true },
+          beforeEnter (to, from, next) {
+            let role = localStorage.getItem('roleStatus')
+            if (role === 'Admin') {
+              next()
+            } else {
+              next('/')
+            }
+          }
+        },
+        {
+          path: 'surveys',
+          name: 'Manage Surveys',
+          component: ManageSurveys,
+          meta: { requiresAuth: true },
+          beforeEnter (to, from, next) {
+            let role = localStorage.getItem('roleStatus')
+            if (role === 'Admin') {
+              next()
+            } else {
+              next('/')
+            }
+          }
+        },
+        {
+          path: 'form',
+          name: 'Manage Form',
+          component: ManageForm,
+          meta: { requiresAuth: true },
+          beforeEnter (to, from, next) {
+            let role = localStorage.getItem('roleStatus')
+            if (role === 'Admin') {
               next()
             } else {
               next('/')

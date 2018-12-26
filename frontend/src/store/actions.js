@@ -24,13 +24,14 @@ export default {
           }
           localStorage.setItem('roleStatus', roleStatus)
           axios.defaults.headers.common['Authorization'] = token
-          axios.defaults.headers.put['Content-Type'] = 'application/json'
+          axios.defaults.headers.common['Content-Type'] = 'application/json'
           commit('AUTH_SUCCESS', token)
           resolve(resp)
         })
         .catch(err => {
           localStorage.removeItem('token')
           commit('AUTH_ERROR')
+          console.log(err.response.data)
           reject(err)
         })
     })
@@ -42,6 +43,7 @@ export default {
       localStorage.removeItem('token')
       localStorage.removeItem('roleStatus')
       delete axios.defaults.headers.common['Authorization']
+      delete axios.defaults.headers.common['Content-Type']
       resolve()
     })
   },
@@ -56,7 +58,7 @@ export default {
           resolve(resp)
         })
         .catch(err => {
-          console.log(err)
+          console.log(err.response)
           reject(err)
         })
     })
